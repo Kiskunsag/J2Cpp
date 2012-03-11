@@ -1,0 +1,67 @@
+Java-To-CPP-Converter heavily relies on modularization. Every logical module should have it's own folder.
+
+scanner:
+foreach klassen-definition in programm do:
+             foreach klassen_member in klassen-definition do:
+                   erkenneTyp klassen_member
+                   registriere klassen_member
+             foreach klassen_methode in klassen-definition do:
+                   registriere  klassen_methode
+                   erkenneTyp klassen_methode
+                   erkenneFunktion klassen_methode aktuellerNamespace
+
+erkenneFunktion klasse namespace:
+foreach lokalerNamespace in funktionsNamespaces do:
+       foreach member in lokalerNamespace do:
+                    registriere member
+                    erkenneTyp member
+
+global:
+foreach namespace in namespaces do:
+   foreach global in namespace do:
+       registriere global
+       erkenneTyp global
+
+
+übersetzer ( tokenTypTabelle, Source ):
+    Source = doSyntax Source
+    RenameTypes Sources tokenTypTabelle
+    ReplaceInputLanguageOnlyFeatures Source
+    CheckSource Source
+    return Source
+
+main( inputSource ):
+    table = scanner
+    table += global
+    return übersetzer( table, inputSource )
+
+Currently, following modules are planned / in development:
+
+-type parser: recognoizes and memorizes the type of names, i.e. struct/class, primitive, container, pointer, or custom class for classes, functions and globals.
+-flat syntax-replacer: performs plain syntax-substitution, i.e the Delphi-keyword procedure becomes "void" etc.
+-language-specific-replacer: performs non-trivial language-translation, like translating static Java-classes into global functions if desired. The quality of the resulting code depends on the reliablty of the type parser.
+-source check: check the source for errors and correct if possible. This will simply be done by compiling the code with a c++-compiler and interpreting the error-messages.
+
+
+Later on, it is planned to have a kind of meta-language that will make it possible to translate languages without having to program that specifical language-translation. Everything needed therefore an implementation that translates one of the languages into the meta-language and the other one out of that meta-language. So, up to now, you have to translate the languages as follows:
+
+Java	C++	C	C#
+
+To translate every language into each other, you would need 12 converters. Not very nice, huh? Now take a look at this:
+
+Java		Java
+C++		C++
+	ML
+C		C
+C#		C#
+
+Following that approach with ML = meta-language, you only need 8 converters to successfully translate every language into each other. The interesting fact about the second approach is, that although we didn't actually build a Java-To-Cpp-Converter, we are still able to do exactly that - just by translating Java into ML and ML into C++. Although this approch will use up siglificantly more time, it is much more flexible and reduces the count of needed converters dramatically. Imagine, you had 50 languages to convert into each other. Approach 2 wants you to write 100 converters (2 for each language). Approach 1 wants you to write 99*100 converters, giving you 9900 converters to code.
+
+
+Moreover, the project is split into one project compiling a core-library and another project compiling a GUI. The core-library is written in C++ and Boost or Qt, the GUI can be written in any language. For windows, the core is organized in a Visual Studio-project, for linux in Code::Blocks or in no IDE at all. There will be no makefiles provided but CMakeLists.
+
+
+
+
+
+
