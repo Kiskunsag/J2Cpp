@@ -2,32 +2,34 @@
 
 //Qt includes
 #include <QFile>
+#include <QHash>
+#include <QTextStream>
+#include <QRegExp>
+#include <QStringList>
 
 //std includes
 #include <string>
+#include <vector>
 
 using namespace std;
 
 
-        // idea: every "{" opens a new block which can be used to divide the variables from each other. Consequently, every "}" closes such a line. Internally, we will represent staring and ending blocks with their "name" (i.e. function name, class name, struct name or <anon> for anonymous namespacess) and divide them with "::". So, if a nested class "nested" embedded in a class "upper" contains a variable int i, the type of i can be looked up by searching "upper::nested::i", which will return a enum-value that determines the type. The replacement-parser doesn't care for exact type evidence, it only tries to make the syntax fit.
+// idea: every "{" opens a new block which can be used to divide the variables from each other. Consequently, every "}" closes such a line. Internally, we will represent staring and ending blocks with their "name" (i.e. function name, class name, struct name or <anon> for anonymous namespacess) and divide them with "::". So, if a nested class "nested" embedded in a class "upper" contains a variable int i, the type of i can be looked up by searching "upper::nested::i", which will return a enum-value that determines the type. The replacement-parser doesn't care for exact type evidence, it only tries to make the syntax fit.
 
 /**
-  @todo: verify that after the translation, no identifer equals a reserved keyword. That can easily be done as soon as the source code is entirely tokenized.
+  @todo verify that after the translation, no identifer equals a reserved keyword. That can easily be done as soon as the source code is entirely tokenized.
   */
 
-
-namespace
-{
-    vector<ParsedFile> parsedFiles;
-}
 
 
 bool parsefile(std::string fileName, bool recursive)
 {
-    // <[namespaces::]variable, type>
-    QHash<string, string>;
 
-    QFile file(fileName);
+    // <[namespaces::]variable, type>
+    QHash<string, string> variables;
+    vector<Token> tokens;
+
+    QFile file(QString::fromStdString(fileName));
     file.open(QIODevice::ReadOnly);
     QTextStream in(&file);
     QString line = in.readLine();
@@ -142,35 +144,110 @@ public class Scribble extends Applet {
         //line.split(".,;()")
         // Regex is: !=|==|>=|<=|\+\+|--|&&|\|\||\?\:|instanceof|<<|>>|>>>|\*|[=.,;()+-/%!><~&^\|]
         /// @todo: More syntax-checks (i.e. ||| must NOT recognized as || and |).
-        // The character class is at the end, because == needs a higher precedence than =. Consider as well != against ! and =.
-        QRegExp tokenSeperator("!=|==|>=|<=|\\+\\+|--|&&|\\|\\||\\?\\:|instanceof|<<|>>|>>>|\\*|[=.,;()+-/%!><~&^\\|]");
-        QStringList tokens(line.split(tokenSeperator, QString::SkipEmptyParts));
+        // The character class is at the end, because == needs a higher precedence than =. Consider as well != against ! and =. Seperators are all operators and whitespaces
+        QRegExp tokenSeperator("^[\\t]|!=|==|>=|<=|\\+\\+|--|&&|\\|\\||\\?\\:|instanceof|<<|>>|>>>|\\*|[=.,;()+-/%!><~&^\\|]");
+        QStringList tokenStrings(line.split(tokenSeperator, QString::SkipEmptyParts));
         QString token;
         string tokenStdString = token.toStdString();
 
-        string singleCharacterOperators = "=.,;()+-/%!><~&^|";
-        foreach(tokens, token)
+        /// @todo SINN VON SINGLECHARACTER UND DOUBLECHARACTER-AUFTEILUNG? GGF. TRENNZEICHEN VERWENDEN!
+
+        string singleCharacterOperators = "=.,;()+-*/%!><~&^|";
+        string doubleCharacterOperators = "!===>=<=++--&&||?:<<>>";
+
+        // Check the current token:
+        foreach(token, tokenStrings)
         {
-            // TODO: Determine the type of the token
-            // first attempt: check whether the token is an operator. This check is quite easy
+            bool found = false;
+            // Is the token an operator?
             switch(token.length())
             {
-                // if the token is an operator, it must be one of the following:
-                case 1:
-            {
-                bool found = false;
-                for(vector<string>::iterator i = singleCharacterOperators.begin(); i != singleCharacterOperators.end(); i++)
-                    if (*i == tokenStdString)
+            // if the token is an operator, it must be one of the following: = . , ; ( ) + - / % ! > < ~ & ^ |
+            case 1:
+            {                
+                // No regex here (performance issues)
+                for(string::iterator i = singleCharacterOperators.begin(); i != singleCharacterOperators.end(); i++)
+                    // Assuming that tokenStdString has length 1, both left and right hands of the expression are chars
+                    if (*i == *tokenStdString.c_str())
                     {
                         found = true;
                         break;
                     }
             }
+            case 2:
+                // No regex here (performance issues)
+                for(int i = 0; i < doubleCharacterOperators.size() -1; i+=2)
+                    if (tokenStdString == doubleCharacterOperators.substr(i, 2))
+                    {
+                        found = true;
+                        break;
+                    }
+             case 3:
+                if(tokenStdString == ">>>")
+                {
+                    found = true;
+                    break;
+                }
+             case 9:
+                if(tokenStdString == "instanceof")
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if(found)
+            {
+                tokens.push_back(make_token(token.toStdString(), tkOperator));
+                continue;
             }
 
-            // second try: check whether the token is a variable or function by looking it up. If so, the token is a identifier
-            // third try: check whether the token is a constant. If so, it must be a string (syntax: "foo"), an integer (syntax: [+]|[-]12345), a float point value (syntax: 12345.[12345{d|f}]), a boolean (syntax: true|false)
-            // fourth try: the token is obviously wrong. Comment it out with /* */ and add a /// @todo: error line or such.
+            // Is the token an identifier? If so, it may only contain alphanumeric chars and must not start with a number. Additionally, the identifier is registered, if it was not declared before.
+            QRegExp alphanumeric("\\w");
+            // ASCII 48-57 is 0-9, identifiers do not start with numbers
+            if(token[0] < 48 && token[0] > 57 )
+            {
+                found = alphanumeric.exactMatch(token);
+            }
+            if(found)
+            {
+                tokens.push_back(make_token(token.toStdString(), tkIdentifier));
+                continue;
+            }
+            // Check whether the token is a constant. If so, it must be a string (syntax: "\w+"), an integer (syntax: [+]|[-]12345), a float point value (syntax: 12345\.[12345{d|f}]), a boolean (syntax: true|false), a char (syntax: '\w')
+
+            QRegExp str(" \"\\w+ \" ");
+            found = str.exactMatch(token);
+            if(found)
+            {
+                tokens.push_back(make_token(token.toStdString(), tkOperator));
+                continue;
+            }
+            QRegExp integer("[+]|[-]12345");
+            found = integer.exactMatch(token);
+            if(found)
+            {
+                tokens.push_back(make_token(token.toStdString(), tkOperator));
+                continue;
+            }
+            QRegExp point("\\d+\\.\\d+(?:d|f)");
+            found = point.exactMatch(token);
+            if(found)
+            {
+                tokens.push_back(make_token(token.toStdString(), tkOperator));
+                continue;
+            }
+            QRegExp chr("'\\w'");
+            found = chr.exactMatch(token);
+            if(found)
+            {
+                tokens.push_back(make_token(token.toStdString(), tkOperator));
+                continue;
+            }
+
+            /// @todo the token is a keyword
+
+            // The token is obviously wrong. Comment it out with /* */ and add a /// @todo: error line or such.
+
         }
 
         // Now as the tokens are found, we need to find out their kind, i.e variable, class name, function, operator etc. The token's function can be found in the enum tokenKind
@@ -189,6 +266,6 @@ public class Scribble extends Applet {
 
         // There is no syntactic difference. The only way to distinguish, is to look out for a variable declaration. If there is a Foo Bar; line somewhere before the call, it must be a construction, else a function-call. That's why it's important to save variables and their type, in our case this is done by the HashMap "variables".
 
-        line = in.readLine();               
+        line = in.readLine();
     }
 }

@@ -1,0 +1,28 @@
+OPERATORS:
+
+equal, except for the following:
+Java            C++
+.               . -> ::
+>>>             <no match>
+a instanceof b  consider: if(dynamic_cast<b>(a)) ;
+
+CLASSES:
+
+equal, except for the following:
+Java                    C++
+final                   <no match>, consider the class Final and friend-declarations.
+
+Foo a;                  Foo* a;
+a = new Foo();          a = new Foo;
+                        OR:
+                        Foo a;
+
+COMMON EXPRESSIONS:
+
+Java                                                C++
+System.out.println(x);                              cout << x << endl;
+
+CONSTANTNESS:
+
+Java                        C++
+final Foo a;                a *const Foo;

@@ -1,26 +1,25 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-/**
- * @file The idea behind the parser is, that it can give source-evidence for each file. So, if the parser that does the real translation afterwards, finds following Java-statements:
+#include <string>
 
-// bar.j
-class Test {
-    int i;
-}
-
-static class Main
-    Test t;
-    static void Main(){
-        t = new Test();
-        t.i = 17;
-}
-
-Now, it must look up the type of the variable t in the class Main in the file bar.j . That kind of data-organization must be represented in a dictionary, holding the file-name + path as a key and a type-dictionary at the other.
-
-For that duty every variable, function and class are store in the corresponding vector holding t
- */
+// tokens do NOT give information related to the type!
+// IMPORTANT! tkConstant applies to values that do not have a corresponding identifier. Constants like    "public static final int MAX_UNITS = 25;" are considered identifiers.
+enum tokenKind{tkIdentifier, tkOperator, tkConstant};
 
 bool parsefile(std::string fileName, bool recursive = false);
+
+struct Token{
+    std::string token;
+    tokenKind kind;
+};
+
+Token make_token(std::string token, tokenKind kind)
+{
+    Token res;
+    res.token = token;
+    res.kind = kind;
+    return res;
+}
 
 #endif // PARSER_H

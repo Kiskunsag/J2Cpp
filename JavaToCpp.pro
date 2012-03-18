@@ -17,8 +17,6 @@ TEMPLATE = app
 
 SOURCES += \
     source/main.cpp \
-    source/parser/parser.cpp \
-    source/parser/parsedfile.cpp \
     source/tokenizer/parser.cpp \
     source/tokenizer/parsedfile.cpp
 
@@ -26,13 +24,15 @@ OTHER_FILES += \
     STRUCTURE \
     README \
     source/DESC \
-    source/DESC
+    source/DESC \
+    ComparisionOfJavaAndCpp.txt
 
 HEADERS += \
     source/parser/parsedfile.h \
     source/parser/parser.h \
     source/tokenizer/parser.h \
     source/tokenizer/parsedfile.h
+
 
 
 
