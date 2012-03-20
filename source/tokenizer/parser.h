@@ -14,6 +14,11 @@ struct Token{
     tokenKind kind;
 };
 
+/// @todo merge files into one file 'java.txt'
+/// @todo put constants into file 'settings.txt' / 'settings.ini' / 'settings.xml'
+static const char keywordFilePath[] = "res/KEYWORDS.TXT";
+static const char literalsFilePath[] = "res/LITERALS.TXT";
+
 Token make_token(std::string token, tokenKind kind)
 {
     Token res;

@@ -14,24 +14,43 @@
 using namespace std;
 
 
-// idea: every "{" opens a new block which can be used to divide the variables from each other. Consequently, every "}" closes such a line. Internally, we will represent staring and ending blocks with their "name" (i.e. function name, class name, struct name or <anon> for anonymous namespacess) and divide them with "::". So, if a nested class "nested" embedded in a class "upper" contains a variable int i, the type of i can be looked up by searching "upper::nested::i", which will return a enum-value that determines the type. The replacement-parser doesn't care for exact type evidence, it only tries to make the syntax fit.
+// idea: every "{" opens a new block which can be used to divide the variables from each other. Consequently, every "}" closes such a line. Internally, we will represent staring and ending blocks with their "name" (i.e. function name, class name, struct name or <anon> for anonymous namespacess) and divide them with "::". So, if a nested class "nested" embedded in a class "upper" contains a variable int i, the type of i can be looked up by searching "upper::nested::i", which will return a enum-value that determines the type. The replacement-parser doesn't care for type evidence, it only tries to make the syntax fit.
 
 /**
   @todo verify that after the translation, no identifer equals a reserved keyword. That can easily be done as soon as the source code is entirely tokenized.
   */
 
+void getLines(string fileName, vector<QString>* output)
+{
+    QFile file(fileName);
+    if(!file.open(QIODevice::ReadOnly))
+        throw "Could not open file: " + fileName;
+    QTextStream in(&file);
+    QString line = in.readLine();
+    while(!line.isNull())
+    {
+        output->push_back(line);
+        line = in.readLine();
+    }
+}
 
 
-bool parsefile(std::string fileName, bool recursive)
+void parsefile(string fileName, bool recursive)
 {
 
     // <[namespaces::]variable, type>
     QHash<string, string> variables;
     vector<Token> tokens;
+    vector<QString> keywords;
+    // literals = named constants
+    vector<QString> literals;
+    /// @todo cache those files (=> declare variables as static?)
+    getLines(keywordFilePath, &keywords);
+    getLines(literalsFilePath, &literals);
 
-    QFile file(QString::fromStdString(fileName));
-    file.open(QIODevice::ReadOnly);
-    QTextStream in(&file);
+    QFile sourceFile(QString::fromStdString(fileName));
+    sourceFile.open(QIODevice::ReadOnly);
+    QTextStream in(&sourceFile);
     QString line = in.readLine();
     string block("");
     while(!line.isNull()){
@@ -213,7 +232,7 @@ public class Scribble extends Applet {
                 tokens.push_back(make_token(token.toStdString(), tkIdentifier));
                 continue;
             }
-            // Check whether the token is a constant. If so, it must be a string (syntax: "\w+"), an integer (syntax: [+]|[-]12345), a float point value (syntax: 12345\.[12345{d|f}]), a boolean (syntax: true|false), a char (syntax: '\w')
+            // Check whether the token is a constant. If so, it must be a string (syntax: "\w+"), an integer (syntax: ^[+-]{1}\d), a float point value (syntax: 12345\.[12345{d|f}]), a boolean (syntax: true|false), a char (syntax: '\w')
 
             QRegExp str(" \"\\w+ \" ");
             found = str.exactMatch(token);
@@ -222,7 +241,7 @@ public class Scribble extends Applet {
                 tokens.push_back(make_token(token.toStdString(), tkOperator));
                 continue;
             }
-            QRegExp integer("[+]|[-]12345");
+            QRegExp integer("^[+-]{1}\\d");
             found = integer.exactMatch(token);
             if(found)
             {
@@ -244,10 +263,35 @@ public class Scribble extends Applet {
                 continue;
             }
 
-            /// @todo the token is a keyword
+            // Check whether the token is a reserved keyword ...
+            for(vector<QString>::iterator i = keywords.begin(); i != keywords.end(); i++)
+            {
+                if(token == i)
+                    found = true;
+                break;
+            }
+            if(found)
+            {
+                tokens.push_back(make_token(token.toStdString(), tkKeyword));
+                continue;
+            }
 
-            // The token is obviously wrong. Comment it out with /* */ and add a /// @todo: error line or such.
+            // ... or literal, and like that considered constant
+            for(vector<QString>::iterator i = literals.begin(); i != literals.end(); i++)
+            {
+                if(token == i)
+                    found = true;
+                break;
+            }
+            if(found)
+            {
+                tokens.push_back(make_token(token.toStdString(), tkConstant));
+                continue;
+            }
 
+
+            // The token is obviously wrong.
+            tokens.push_back(make_token(token.toStdString(), tkUnknown));
         }
 
         // Now as the tokens are found, we need to find out their kind, i.e variable, class name, function, operator etc. The token's function can be found in the enum tokenKind
