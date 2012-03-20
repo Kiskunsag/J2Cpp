@@ -5,9 +5,11 @@
 
 // tokens do NOT give information related to the type!
 // IMPORTANT! tkConstant applies to values that do not have a corresponding identifier. Constants like    "public static final int MAX_UNITS = 25;" are considered identifiers.
-enum tokenKind{tkIdentifier, tkOperator, tkConstant};
-
-bool parsefile(std::string fileName, bool recursive = false);
+enum tokenKind{tkIdentifier, tkOperator, tkConstant, tkKeyword, tkUnknown};
+/** Parses a file and returns the file in tokenized form.
+  * @throw string
+  */
+void parsefile(std::string fileName, bool recursive = false);
 
 struct Token{
     std::string token;
