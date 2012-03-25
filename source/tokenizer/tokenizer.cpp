@@ -1,4 +1,4 @@
-#include "parser.h"
+#include "../parser/parser.hpp"
 
 //Qt includes
 #include <QFile>
@@ -22,7 +22,7 @@ using namespace std;
 
 void getLines(string fileName, vector<QString>* output)
 {
-    QFile file(fileName);
+    QFile file(QString::fromStdString(fileName));
     if(!file.open(QIODevice::ReadOnly))
         throw "Could not open file: " + fileName;
     QTextStream in(&file);
@@ -266,7 +266,7 @@ public class Scribble extends Applet {
             // Check whether the token is a reserved keyword ...
             for(vector<QString>::iterator i = keywords.begin(); i != keywords.end(); i++)
             {
-                if(token == i)
+                if(token == *i)
                     found = true;
                 break;
             }
@@ -279,7 +279,7 @@ public class Scribble extends Applet {
             // ... or literal, and like that considered constant
             for(vector<QString>::iterator i = literals.begin(); i != literals.end(); i++)
             {
-                if(token == i)
+                if(token == *i)
                     found = true;
                 break;
             }
