@@ -118,7 +118,7 @@ public:
             next_token();
             /// @todo better error handling: continue looking for a token that is "class"
             if(current.token != "class")
-                throw "Cannot find beginning of class declaration;"
+                throw "Cannot find beginning of class declaration";
         }
         else if(current.token != "class")
             throw "Cannot find beginning of class declaration";

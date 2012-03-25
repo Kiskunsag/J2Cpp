@@ -9,7 +9,7 @@
   * tkIdentifier: Any java identifier (variable names, constants' names, class names etc.)
   * tkOperator: Any java operator, both unary, binary or ternary
   * tkKeyword: Any java keyword.
-  * tkOther: Following names are classified as tkOther, because they do not fit any category above: { } ;
+  * tkOther: Following names are classified as tkOther, because they do not fit any category above: { } ; < >
   */
 enum tokenKind{tkIdentifier, tkOperator, tkConstant, tkKeyword, tkOther, tkUnknown};
 

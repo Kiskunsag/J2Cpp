@@ -37,6 +37,7 @@ void getLines(string fileName, vector<QString>* output)
 
 void parsefile(string fileName, bool recursive)
 {
+    /// @todo check whether all whitespaces are removed properly.
 
     // <[namespaces::]variable, type>
     QHash<string, string> variables;
