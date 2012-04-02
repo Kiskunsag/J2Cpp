@@ -7,7 +7,7 @@
   */
 bool isKnownType(Token token);
 
-/** Registers a string, so that the converter will treat it as type in the future. Primitives and classes are considered types.
+/** Registers a string, so that the converter will treat it as a type in the future. Primitives and classes are both considered types.
   * @see isKnownType
   * @return true, if type could be registered. false, if type has already been registered.
   */

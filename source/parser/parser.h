@@ -4,31 +4,28 @@
 //custom incudes
 #include "../tokenizer/tokenizer.h"
 #include "../registration/registration.h"
+#include "../globals.h"
 
 //std includes
 #include <string>
 #include <deque>
+#include <vector>
 
 //Qt includes
 #include <QString>
 
-struct Variable
-{
-    std::string name;
-    std::string type;
-};
-/** Contains various possiblities to make custom types in Java.
-  */
-enum Structures{strStructure, strClass, strInterface};
-
 namespace Java{
-/** Visibility levels in Java
-  * public: freely accessable
-  * protected: freely accessable by derived classes and package classes
-  * default: freely accessable by package classes
-  * private: not accessable
+/** Visibility levels in Java. Members are ALWAYS accessable inside their class.
   */
-enum VisibilityLevels{vsPublic, vsProtected, vsDefault, vsPrivate};
+enum VisibilityLevels{
+    /// freely accessable
+    vsPublic,
+    /// freely accessable by derived classes and package classes
+    vsProtected,
+    /// freely accessable by package classes
+    vsDefault,
+    /// not accessable
+    vsPrivate};
 
 VisibilityLevels toVisibilityLevel(std::string lvl)
 {
@@ -58,7 +55,7 @@ bool isVisibilityLevel(std::string lvl)
 
 }
 
-/** Contains values used to represent the function of a identifier in a class. Members in classes are eihter functions, variables or constants.
+/** Contains values used to represent the function of a identifier in a class. Members in classes are either functions, variables or constants.
   */
 enum MemberKind{mkFunction, mkVariable, mkConstant};
 
@@ -73,13 +70,13 @@ struct Member
     /// every member in a class has a visibility level. @see Java::visibilityLevel
     Java::VisibilityLevels visibilityLevel;
     /// optional. Care when interpreting this value! If type is mkFunction, initializationValue contains the function body + parameters, like this: ([parameters]){function body}. Else, it will contain an initial value for a constant/variable.
-    vector<Token> initializationValue;
+    std::vector<Token> initializationValue;
 };
 
 /// @todo not very nice, clean up that mess!
 template<int> class Parser;
 
-/// a helper function, that requires a deque called tokens and a Token called current to be declared in the same scope. It takes the first element out of the deque and stores it in the variable current, then removing that element from the deque.
+/// a helper function that requires a deque called tokens and a Token called current to be declared in the same scope. It takes the first element out of the deque and stores it in the variable current, aftewards removing the taken element from the deque. Do not forget to put a semicolon after the macro! @internal The macro was designed to not require a semicolon at the end, but the indent of QtCreator did not accept that...
 #define next_token() current = tokens.front(); tokens.pop_front()
 template<>
 class Parser<strClass>
@@ -87,7 +84,7 @@ class Parser<strClass>
 private:
     Java::VisibilityLevels visibilityLevel;
     std::string baseClass;
-    std::string className;
+    std::string name;
     std::deque<Token> & tokens;
     std::vector<Member> variables;
     std::vector<Member> functions;
@@ -125,7 +122,7 @@ public:
         // expecting a class name, i.e a identifier
         next_token();
         if(current.kind == tkIdentifier)
-            className = current.token;
+            name = current.token;
         else
             throw "Error parsing class: Cannot retrieve class name.";
         next_token();
@@ -205,8 +202,83 @@ public:
         }
     }
 
-    void toCPPSourceCode();
-    void toCPPHeader():
+    std::string toCPPSourceCode()
+    {
+        for(std::vector<Member>::iterator i = functions.begin(); i != functions.end(); i++)
+        {
+
+        }
+    }
+
+    std::string toCPPHeader()
+    {
+        // header
+        // class foo [: bar] {
+        string result = "class " + name;
+        if(baseClass != "")
+            result += " : " + baseClass;
+        result += "{\r\n";
+        string constants;
+
+        for(Java::VisibilityLevels lvl = Java::vsPublic; i <= Java::vsPrivate; i++)
+        {
+            switch(lvl)
+            {
+            case Java::vsPublic :    result += "public:\\r\\n";
+            case Java::vsProtected : result += "protected:\\r\\n";
+            /// @todo: other case that private for vsDefault. Anonymous namespace?
+            case Java::vsDefault:
+            case Java::vsPrivate : result += "private:\\r\\n";
+            }
+
+        // members
+        for(std::vector<Member>::iterator i = variables.begin(); i != variables.end(); i++)
+        {
+            // Only if visible in level lvl and a variable - constants will be processed in an own namespace which has the same as the class itself.
+            if(lvl == i->visibilityLevel)
+            {
+                if(i->kind == mkVariable)
+                {
+                    // type name [= initialization];
+                    result += i->type + " " + i->name;
+                    if(i->initializationValue != "")
+                      result += " = " + i->initializationValue;
+                    result += ";\\r\\n";
+                }
+                else if (i->kind == i->visibilityLevel == mkConstant)
+                {
+                    if(i->initializationValue == "")
+                        throw "error: constant '" + i->name + "' in class '" +  name + "' has no initialization value.";
+                    constants += "static const" +  i->type + " " + i->name + " = " + i->initializationValue;
+                    constants += ";\\r\\n";
+                }
+            }
+        }
+        for(std::vector<Member>::iterator i = functions.begin(); i != functions.end(); i++)
+        {
+            if(lvl == i ->visibilityLevel)
+            {
+                // type name ([arg])
+                result += i->type + " " + i->name;
+                // iterator charwise until the first closing bracket is found. After the closing bracket, the implementation follows, but we ignore that as we are just writing the header
+                /// @TODO: Java is call by value, but objects are passed as references: Changing the passed object will affect the original object, however setting the passed object to null will not affect the original object. In C++, this is only possible with pointers! Java's primitives are plain call by value, without something outrageous.
+                for(std::vector<Token>::iterator j = i->initializationValue.begin(); j != i->initializationValue.end() && j->token != ')'; j++) result += *j;
+                result += ");";
+            }
+        }
+        }
+
+        // every constant is placed in a namespace that is called like the currently parsed class.
+        if (constants != "")
+        {
+            result += "\\r\\n namespace " + name + "{\\r\\n";
+            result += constants;
+            result += "};\\r\\n";
+        }
+
+        result += "};";
+        return result;
+    }
 };
 
 #endif // PARSER_H

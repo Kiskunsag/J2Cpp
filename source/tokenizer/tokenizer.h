@@ -5,9 +5,9 @@
 
 // tokens do NOT give information related to the type!
 // IMPORTANT! tkConstant applies to values that do not have a corresponding identifier. Constants like    "public static final int MAX_UNITS = 25;" are considered identifiers.
-/** Every token has a type which is represented in this enum:
+/** Every token represents a string that fits one of these catgories:
   * tkIdentifier: Any java identifier (variable names, constants' names, class names etc.)
-  * tkOperator: Any java operator, both unary, binary or ternary
+  * tkOperator: Any java operator: unary, binary or ternary
   * tkKeyword: Any java keyword.
   * tkOther: Following names are classified as tkOther, because they do not fit any category above: { } ; < >
   */
@@ -28,6 +28,9 @@ struct Token{
 static const char keywordFilePath[] = "res/KEYWORDS.TXT";
 static const char literalsFilePath[] = "res/LITERALS.TXT";
 
+/** Constructs a token.
+  * @group helper-function
+  */
 Token make_token(std::string token, tokenKind kind)
 {
     Token res;

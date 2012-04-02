@@ -17,8 +17,8 @@ TEMPLATE = app
 
 SOURCES += \
     source/main.cpp \
-    source/tokenizer/parser.cpp \
-    source/tokenizer/parsedfile.cpp
+    source/tokenizer/tokenizer.cpp \
+    source/registration/registration.cpp
 
 OTHER_FILES += \
     STRUCTURE \
@@ -29,9 +29,28 @@ OTHER_FILES += \
 
 HEADERS += \
     source/parser/parsedfile.h \
+    source/tokenizer/tokenizer.h \
+    source/registration/registration.h \
     source/parser/parser.h \
-    source/tokenizer/parser.h \
-    source/tokenizer/parsedfile.h
+    source/globals.h
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

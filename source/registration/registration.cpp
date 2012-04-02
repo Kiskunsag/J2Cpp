@@ -1,4 +1,6 @@
 #include "registration.h"
+#include "parser/parser.h"
+#include "../globals.h"
 
 
 using namespace std;
@@ -12,9 +14,8 @@ using namespace std;
 
 namespace{
     /// @todo not efficient. Work with hashes for faster lookup here? Alternativly: "As others have said, use the STL find or find_if functions. But if you are searching in very large vectors and this impacts performance, you may want to sort your vector and then use the binary_search, lower_bound, or upper_bound algorithms." (http://stackoverflow.com/questions/571394/how-to-find-an-item-in-a-stdvector). Or use a low-count (30) cache-vector as well. Alphabetical sorting might also help.
-    vector<string> types;
+    map<string, Type> types;
 }
-
 bool isKnownType(const Token & token){
     return find(types.begin(), types.end(), token) != types.end();
 }
@@ -28,3 +29,11 @@ bool registerType(const Token & token){
         return true;
     }
 }
+
+/** @internal By now, this function does nothing. Later on, it shallTranslate specific Java-types into their C++-counterpart. Not in header, because it's not intended for use!
+  */
+string translateType(string type)
+{
+
+}
+

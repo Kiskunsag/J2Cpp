@@ -1,4 +1,4 @@
-#include "../parser/parser.hpp"
+#include "../parser/parser.h"
 
 //Qt includes
 #include <QFile>
