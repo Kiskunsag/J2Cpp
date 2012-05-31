@@ -1,0 +1,18 @@
+# j2cpp
+
+I chose this name as there are already two other repositories named j2c and so I thought of j2c++, but it's is rather stupid (if not even impossible?) to include special characters in a name. So, it ended up j2cpp.
+
+## What can it do?
+
+It takes your Java classes and returns a C++-Header and a C++-Implementation file for every of your classes. That's it!
+
+## What is so cool about it?
+
+The Java code you have written becomes proud, native C++-code. I do my best porting a bit of special Java langugage-constructs and Java lib into C++ and that is what really is your benefit.
+
+## What are it's aims?
+
+* performant
+* highly configurative
+=> It is YOU who has written the Java classes and it is YOU who should control, what your classes look like in C++ (consider more than one class per file etc.)
+* easy to use = no need of configuration

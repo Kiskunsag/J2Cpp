@@ -233,7 +233,8 @@ public class Scribble extends Applet {
                 tokens.push_back(make_token(token.toStdString(), tkIdentifier));
                 continue;
             }
-            // Check whether the token is a constant. If so, it must be a string (syntax: "\w+"), an integer (syntax: ^[+-]{1}\d), a float point value (syntax: 12345\.[12345{d|f}]), a boolean (syntax: true|false), a char (syntax: '\w')
+            // Check whether the token is a constant. If so, it is a string (syntax: "\w+"), an integer (syntax: ^[+-]{1}\d), a float point value (syntax: 12345\.[12345{d|f}]), a boolean (syntax: true|false), a char (syntax: '\w')
+            /// todo: ein Regex für alle Fälle?
 
             QRegExp str(" \"\\w+ \" ");
             found = str.exactMatch(token);
