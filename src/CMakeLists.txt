@@ -4,8 +4,9 @@ set (j2cpp_VERSION_MAJOR 0)
 set (j2cpp_VERSION_MINOR 0)
 
 configure_file(
- "${PROJECT_BINARY_DIR}/src/Version.h.in"
- "${PROJECT_BINARY_DIR}/src/Version.h"
+ "${PROJECT_BINARY_DIR}/src/version.h.in"
+ "${PROJECT_BINARY_DIR}/src/version.h"
  )
 
-include_directories("$(PROJECT_BINARY_DIR)")
+#ensure that Version.h is easily found
+include_directories("$(PROJECT_BINARY_DIR)/src")
