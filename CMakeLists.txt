@@ -10,4 +10,5 @@ set(CMAKE_C_COMPILER "gcc")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
-add_subdirectory(source)
+#add_subdirectory(source)
+add_subdirectory(doc)
