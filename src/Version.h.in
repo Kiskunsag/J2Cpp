@@ -1,0 +1,2 @@
+#define j2cpp_VERSION_MAJOR @j2cpp_VERSION_MAJOR@
+#define j2cpp_VERSION_MINOR @j2cpp_VERSION_MINOR@
