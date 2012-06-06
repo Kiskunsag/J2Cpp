@@ -1,18 +1,10 @@
 #include <iostream>
-#include <QtCore/QCoreApplication>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 using namespace std;
-
-/*int main(int argc, char *argv[])
-{
-    QCoreApplication a(argc, argv);
-    cout << a.applicationVersion().toStdString() << endl;
-    return a.exec();
-}*/
 
 void printHelp()
 {
