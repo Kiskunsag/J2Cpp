@@ -4,7 +4,7 @@ set (j2cpp_VERSION_MAJOR 0)
 set (j2cpp_VERSION_MINOR 0)
 
 configure_file(
- "${PROJECT_BINARY_DIR}/src/version.h.in"
+ "${PROJECT_SOURCE_DIR}/src/version.h.in"
  "${PROJECT_BINARY_DIR}/src/version.h"
  )
 
